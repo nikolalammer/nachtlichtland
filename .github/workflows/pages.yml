@@ -1,0 +1,40 @@
+name: Homepage veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Dateien holen
+        uses: actions/checkout@v6
+      - name: Pages vorbereiten
+        uses: actions/configure-pages@v5
+      - name: Öffentliche Seitendateien zusammenstellen
+        run: |
+          mkdir _site
+          cp index.html impressum.html datenschutz.html stil.css CNAME .nojekyll _site/
+      - name: Seitendateien übertragen
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4
